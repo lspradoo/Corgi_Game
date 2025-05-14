@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Corgi Rage Run</title>
   <style>
     :root {
@@ -18,15 +18,20 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
       background-color: var(--background);
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       overflow: hidden;
       text-align: center;
       user-select: none;
       padding: 10px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      touch-action: manipulation;
     }
 
     #game-container {
@@ -34,6 +39,10 @@
       margin: 0 auto;
       padding: 10px;
       position: relative;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
     }
 
     header {
@@ -46,7 +55,7 @@
     }
 
     h1 {
-      font-size: 2rem;
+      font-size: clamp(1.5rem, 6vw, 2rem);
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
       background: linear-gradient(to right, var(--primary), var(--secondary));
       -webkit-background-clip: text;
@@ -56,7 +65,7 @@
     }
 
     #score-display {
-      font-size: 1.2rem;
+      font-size: clamp(1rem, 4vw, 1.2rem);
       color: var(--primary);
       background: white;
       padding: 5px 15px;
@@ -67,12 +76,14 @@
     #game-area {
       position: relative;
       width: 100%;
-      height: 250px;
+      flex: 1;
+      min-height: 200px;
+      max-height: 60vh;
       background: white;
       border-radius: 15px;
       overflow: hidden;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
+      touch-action: manipulation;
     }
 
     #start-screen {
@@ -91,9 +102,10 @@
 
     #start-screen h2 {
       color: var(--primary);
-      font-size: 1.8rem;
+      font-size: clamp(1.5rem, 6vw, 1.8rem);
       margin-bottom: 15px;
       text-align: center;
+      padding: 0 10px;
     }
 
     #start-btn {
@@ -102,7 +114,7 @@
       color: white;
       border: none;
       border-radius: 20px;
-      font-size: 1.1rem;
+      font-size: clamp(1rem, 4vw, 1.1rem);
       cursor: pointer;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       transition: all 0.2s;
@@ -182,28 +194,28 @@
     }
 
     #message h2 {
-      font-size: 1.8rem;
+      font-size: clamp(1.5rem, 6vw, 1.8rem);
       margin-bottom: 8px;
       color: var(--obstacle);
       line-height: 1.2;
     }
 
     #message p {
-      font-size: 1rem;
+      font-size: clamp(0.9rem, 4vw, 1rem);
       margin-bottom: 10px;
       line-height: 1.3;
     }
 
     #final-score {
       display: block;
-      font-size: 1.3rem;
+      font-size: clamp(1.1rem, 4vw, 1.3rem);
       font-weight: bold;
       margin: 8px 0;
       color: var(--primary);
     }
 
     #laughing-emoji {
-      font-size: 2.5rem;
+      font-size: clamp(2rem, 8vw, 2.5rem);
       display: block;
       margin: 10px 0;
       animation: laugh 0.5s infinite alternate;
@@ -220,7 +232,7 @@
       color: white;
       border: none;
       border-radius: 20px;
-      font-size: 1rem;
+      font-size: clamp(0.9rem, 4vw, 1rem);
       cursor: pointer;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
       transition: all 0.2s;
@@ -236,7 +248,7 @@
       margin-top: 15px;
       color: var(--text);
       opacity: 0.7;
-      font-size: 0.8rem;
+      font-size: clamp(0.7rem, 3vw, 0.8rem);
     }
 
     .cloud {
@@ -249,14 +261,14 @@
 
     #credits {
       margin-top: 8px;
-      font-size: 0.7rem;
+      font-size: clamp(0.6rem, 3vw, 0.7rem);
       color: var(--text);
       opacity: 0.6;
     }
 
     @media (min-width: 768px) {
       #game-area {
-        height: 300px;
+        max-height: 300px;
       }
       
       #corgi {
@@ -281,9 +293,20 @@
         max-width: 400px;
         padding: 25px;
       }
+    }
+
+    /* iOS specific fixes */
+    @supports (-webkit-touch-callout: none) {
+      body {
+        height: -webkit-fill-available;
+      }
       
-      #message h2 {
-        font-size: 2rem;
+      #game-container {
+        height: -webkit-fill-available;
+      }
+      
+      #game-area {
+        max-height: 70vh;
       }
     }
   </style>
@@ -315,7 +338,7 @@
     </div>
 
     <div id="controls">
-      <p>Tap the screen or press space</p>
+      <p>Tap anywhere to jump</p>
       <div id="credits">Created by Lucas</div>
     </div>
   </div>
@@ -352,6 +375,13 @@
       createClouds();
       setupEventListeners();
       setRandomLaugh();
+      
+      // iOS height fix
+      if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        document.documentElement.style.height = '100%';
+        document.body.style.height = '100%';
+        document.getElementById('game-container').style.height = '100%';
+      }
     }
   
     // Cria nuvens decorativas
@@ -377,30 +407,41 @@
   
     // Configura controles
     function setupEventListeners() {
-      DOM.startBtn.addEventListener('click', startGame);
-      DOM.startBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        startGame();
-      }, { passive: false });
-  
-      DOM.gameArea.addEventListener('click', handleGameClick);
-      DOM.gameArea.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        handleGameClick(e);
-      }, { passive: false });
-  
+      // Touch em qualquer lugar da tela
+      document.addEventListener('touchstart', handleTouch, { passive: false });
+      
+      // Clique do mouse
+      document.addEventListener('click', handleClick);
+      
+      // Teclado
       document.addEventListener('keydown', handleKeyPress);
-  
-      DOM.restartBtn.addEventListener('click', resetGame);
-      DOM.restartBtn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        resetGame();
-      }, { passive: false });
     }
   
-    function handleGameClick(e) {
-      if (!gameState.gameStarted) return;
-      if (!gameState.jumping && !gameState.gameOver) jump();
+    function handleTouch(e) {
+      if (!gameState.gameStarted) {
+        e.preventDefault();
+        startGame();
+        return;
+      }
+      
+      if (!gameState.jumping && !gameState.gameOver) {
+        e.preventDefault();
+        jump();
+      }
+    }
+    
+    function handleClick(e) {
+      // Evita duplicação de eventos em dispositivos touch
+      if (e.pointerType === 'touch') return;
+      
+      if (!gameState.gameStarted) {
+        startGame();
+        return;
+      }
+      
+      if (!gameState.jumping && !gameState.gameOver) {
+        jump();
+      }
     }
   
     function handleKeyPress(e) {
@@ -415,6 +456,8 @@
   
     // Lógica do pulo
     function jump() {
+      if (gameState.jumping) return;
+      
       gameState.jumping = true;
       DOM.corgi.classList.add('jump');
   
@@ -537,4 +580,13 @@
   
     // Inicia o jogo quando a página carrega
     window.addEventListener('load', init);
+    
+    // iOS resize fix
+    window.addEventListener('resize', function() {
+      if (window.innerHeight > 0) {
+        document.documentElement.style.height = window.innerHeight + 'px';
+      }
+    });
   </script>
+</body>
+</html>
