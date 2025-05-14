@@ -334,7 +334,7 @@
       startBtn: document.getElementById('start-btn'),
       laughingEmoji: document.getElementById('laughing-emoji')
     };
-
+  
     // Estado do jogo
     const gameState = {
       jumping: false,
@@ -346,48 +346,63 @@
       animationId: null,
       obstacleActive: false
     };
-
+  
     // Inicialização
     function init() {
       createClouds();
       setupEventListeners();
       setRandomLaugh();
     }
-
+  
     // Cria nuvens decorativas
     function createClouds() {
       for (let i = 0; i < 5; i++) {
         const cloud = document.createElement('div');
         cloud.className = 'cloud';
-        
+  
         const size = Math.random() * 50 + 30;
         const posX = Math.random() * 100;
         const posY = Math.random() * 100;
         const opacity = Math.random() * 0.5 + 0.3;
-        
+  
         cloud.style.width = `${size}px`;
         cloud.style.height = `${size * 0.6}px`;
         cloud.style.left = `${posX}%`;
         cloud.style.top = `${posY}%`;
         cloud.style.opacity = opacity;
-        
+  
         DOM.gameArea.appendChild(cloud);
       }
     }
-
+  
     // Configura controles
     function setupEventListeners() {
       DOM.startBtn.addEventListener('click', startGame);
+      DOM.startBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        startGame();
+      }, { passive: false });
+  
       DOM.gameArea.addEventListener('click', handleGameClick);
+      DOM.gameArea.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handleGameClick(e);
+      }, { passive: false });
+  
       document.addEventListener('keydown', handleKeyPress);
+  
       DOM.restartBtn.addEventListener('click', resetGame);
+      DOM.restartBtn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        resetGame();
+      }, { passive: false });
     }
-
+  
     function handleGameClick(e) {
       if (!gameState.gameStarted) return;
       if (!gameState.jumping && !gameState.gameOver) jump();
     }
-
+  
     function handleKeyPress(e) {
       if (!gameState.gameStarted && ['Space', 'ArrowUp', 'w'].includes(e.code)) {
         startGame();
@@ -397,22 +412,22 @@
         jump();
       }
     }
-
+  
     // Lógica do pulo
     function jump() {
       gameState.jumping = true;
       DOM.corgi.classList.add('jump');
-      
+  
       setTimeout(() => {
         DOM.corgi.classList.remove('jump');
         gameState.jumping = false;
       }, 600);
     }
-
+  
     // Inicia o jogo
     function startGame() {
       if (gameState.gameStarted) return;
-      
+  
       gameState.gameStarted = true;
       gameState.gameOver = false;
       resetGameState();
@@ -420,7 +435,7 @@
       DOM.message.style.display = 'none';
       spawnObstacle();
     }
-
+  
     // Reseta o estado do jogo
     function resetGameState() {
       gameState.score = 0;
@@ -428,7 +443,7 @@
       DOM.scoreDisplay.textContent = `Score: 0`;
       gameState.obstacleActive = false;
     }
-
+  
     // Reseta o jogo
     function resetGame() {
       gameState.gameStarted = true;
@@ -437,62 +452,62 @@
       DOM.message.style.display = 'none';
       spawnObstacle();
     }
-
+  
     // Gera obstáculos
     function spawnObstacle() {
       if (gameState.obstacleActive) return;
       gameState.obstacleActive = true;
-      
+  
       let position = DOM.gameArea.offsetWidth;
       DOM.obstacle.style.left = `${position}px`;
-
+  
       const moveObstacle = () => {
         if (gameState.gameOver) {
           gameState.obstacleActive = false;
           return;
         }
-
+  
         position -= gameState.speed;
         DOM.obstacle.style.left = `${position}px`;
-
+  
         updateScore();
-        
+  
         if (checkCollision()) {
           endGame();
           return;
         }
-
+  
         if (position < -100) {
           gameState.obstacleActive = false;
           setTimeout(spawnObstacle, Math.random() * 300 + 200);
           cancelAnimationFrame(gameState.animationId);
           return;
         }
-
+  
         gameState.animationId = requestAnimationFrame(moveObstacle);
       };
-
+  
       moveObstacle();
     }
-
+  
     function updateScore() {
       gameState.score++;
       DOM.scoreDisplay.textContent = `Score: ${gameState.score}`;
       if (gameState.score % 5 === 0) gameState.speed += 0.2;
     }
-
+  
     // Verifica colisão
     function checkCollision() {
       const corgiRect = DOM.corgi.getBoundingClientRect();
       const obstacleRect = DOM.obstacle.getBoundingClientRect();
-
+  
       return (
         corgiRect.right > obstacleRect.left + 20 &&
         corgiRect.left < obstacleRect.right - 20 &&
         corgiRect.bottom > obstacleRect.top + 15
       );
     }
-
+  
     // Finaliza o jogo
     function endGame() {
       gameState.gameOver = true;
@@ -502,26 +517,24 @@
       showGameOver();
       cancelAnimationFrame(gameState.animationId);
     }
-
+  
     function updateHighScore() {
       gameState.highScore = Math.max(gameState.highScore, gameState.score);
       DOM.finalScore.textContent = `Score: ${gameState.score} | Record: ${gameState.highScore}`;
     }
-
+  
     function showGameOver() {
       setRandomLaugh();
       DOM.message.style.display = 'block';
       DOM.restartBtn.style.display = 'inline-block';
     }
-
+  
     // Emoji aleatório de risada
     function setRandomLaugh() {
       const laughs = ['🤣', '😆', '😅', '💀', '☠️'];
       DOM.laughingEmoji.textContent = laughs[Math.floor(Math.random() * laughs.length)];
     }
-
+  
     // Inicia o jogo quando a página carrega
     window.addEventListener('load', init);
   </script>
-</body>
-</html>
